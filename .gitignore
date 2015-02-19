@@ -194,3 +194,10 @@ FakesAssemblies/
 
 # Visual Studio 6 workspace options file
 *.opt
+
+# Models and textures
+*.obj
+*.3ds
+*.box
+*.dds
+*.png

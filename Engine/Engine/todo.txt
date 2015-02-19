@@ -1,0 +1,25 @@
+-Update cook-torrance with GGX and other terms. Optimize
+-Shadows
+-Particles
+-GPU rain
+-Skymap
+-Parallex Occlusion mapping
+-decals
+-Animation
+-Light culling/defered shading/forward+ shading
+-Local reflections via probes/GI
+-LOD
+-Skin shader
+-Volume light
+-text engine
+-Ambient occlusion
+-Lua for game logic
+-Fabric simulation via physics
+-Lens flare
+-Lightmapping?
+
+-HDR
+ -Bloom
+ -Linear space correction/Gamma correction
+ -Tonemapping (filmic?)
+ -Night tonemapping - blue shift: http://content.gpwiki.org/D3DBook:High-Dynamic_Range_Rendering 
