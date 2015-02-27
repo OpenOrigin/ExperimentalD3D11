@@ -54,28 +54,24 @@ ConstantBufferData g_cbData;
 TimeStamp g_timeStart, g_timeCurrent;
 
 // Entities
-MeshEntity g_masterChief, g_crate, g_sphere;
+MeshEntity g_masterChief, g_crate, g_sphere, g_plane;
 
 // Test stuff
 const float g_lightSpeed = .75f;
 DirectX::XMFLOAT3 g_lightOrigin(0, 50, -10);
 DirectX::XMFLOAT3 g_lightProtrusion(30, 30, -30);
 
-//float test_vertices[] = {
-//	-0.5f, -0.5f, 0.5f, 1.0f, 1.0f, .5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-//	-0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-//	0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-//	0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-//};
-//
-//int32_t test_indices[] = {
-//	0, 1, 2,
-//	0, 2, 3,
-//};
+float g_planeRawVertices[] = {
+	-0.5f, -0.5f, 0.5f, 1.0f, 1.0f, .5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+	-0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+	0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+	0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+};
 
-//VertexBufferData g_dataVert = {test_vertices, 4, sizeof(BoxVertex), test_indices, 6};
-//
-//LightSource g_light(DirectX::XMFLOAT3(0, 45, 0), DirectX::XMFLOAT3(16, 0, -16), 1.5);
+uint32_t g_planeRawIndices[] = {
+	0, 1, 2,
+	0, 2, 3,
+};
 
 void UpdateConstantBuffer(){
 	D3D11_MAPPED_SUBRESOURCE mappedSubRsrc;
@@ -107,12 +103,13 @@ void SetResources(){
 	g_masterChief	= MeshEntity(Global::Device, L"..\\..\\Models\\chief.box");
 	g_crate			= MeshEntity(Global::Device, L"..\\..\\Models\\crate.box");
 	g_sphere		= MeshEntity(Global::Device, L"..\\..\\Models\\sphere.box");
+	g_plane			= MeshEntity(Global::Device, g_planeRawVertices, g_planeRawIndices, 4, 6, sizeof(BoxVertex));
 
 	// Set models' orientation 
 	DirectX::XMFLOAT3 axis(-1, 0, 0);
 
 	g_masterChief.rotate(axis, 90);
-
+	
 	// Setup the shader's buffer
 	Util::CreateConstantBuffer(Global::Device, sizeof(ConstantBufferData), &g_constantBuffer, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
@@ -245,8 +242,29 @@ void Render(){
 	Global::DeviceContext->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
 	Global::DeviceContext->IASetIndexBuffer(g_sphere.getIndexBuffer(), DXGI_FORMAT_R32_UINT, offset);
 
-	// Render geometry 2
+	// Render sphere
 	Global::DeviceContext->DrawIndexed(g_sphere.getNumIndices(), 0, 0);
+
+
+	// Render plane
+	DirectX::XMFLOAT3 axis(-1, 0, 0);
+
+	g_plane.reset();
+	g_plane.rotate(axis, 90);
+	g_plane.scale(DirectX::XMFLOAT3(550, 550, 550));
+	g_plane.translate(DirectX::XMFLOAT3(0, 275, 0));
+	g_cbData.world = g_plane.getWorldMatrix();
+
+	UpdateConstantBuffer();
+
+	// Bind plane buffers
+	buffer = g_plane.getVertexBuffer();
+
+	Global::DeviceContext->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
+	Global::DeviceContext->IASetIndexBuffer(g_plane.getIndexBuffer(), DXGI_FORMAT_R32_UINT, offset);
+
+	// Render plane
+	Global::DeviceContext->DrawIndexed(g_plane.getNumIndices(), 0, 0);
 }
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdLine, int numCmdShow){
