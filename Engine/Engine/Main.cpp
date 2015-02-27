@@ -93,7 +93,7 @@ void SetResources(){
 
 	// Create vertex/pixel shaders
 	Util::CreateVertexShaderFromBinary(Global::Device, path + L"\\VertexShader.cso", &g_vertexShader);
-	Util::CreatePixelShaderFromBinary(Global::Device, path + L"\\PixelShader.cso", &g_pixelShader);
+	Util::CreatePixelShaderFromBinary(Global::Device, path + L"\\MaterialShader.cso", &g_pixelShader);
 
 	// Create input layout
 	Util::CreateVertexLayoutFromFile(Global::Device, L"..\\Engine\\VertexShader.hlsl", "V_Shader", &g_layout);
