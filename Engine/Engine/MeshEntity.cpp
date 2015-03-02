@@ -1,63 +1,5 @@
 #include "Engine.h"
 
-MeshEntity::MeshEntity(ID3D11Device *device, const std::wstring &path){
-	m_vertexBuffer	= nullptr;
-	m_indexBuffer	= nullptr;
-	m_vertexSize	= sizeof(BoxVertex);
-	m_world			= DirectX::XMMatrixIdentity();
-
-	// Open up the model
-	HANDLE file = CreateFile(path.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-
-	if(file == INVALID_HANDLE_VALUE) return;
-
-	// Read in header
-	DWORD bytesRead;
-	BoxHeader header;
-	uint32_t vertexBufferSize, indexBufferSize;
-
-	ReadFile(file, &header, sizeof(BoxHeader), &bytesRead, NULL);
-
-	// Fill in some data
-	m_numVertices		= header.numVertices;
-	m_numIndices		= header.numIndices;
-	vertexBufferSize	= m_numVertices * m_vertexSize;
-	indexBufferSize		= header.numIndices * sizeof(uint32_t);
-
-	// Allocate buffers
-	void *vertices		= new uint8_t[vertexBufferSize]();
-	uint32_t *indices	= new uint32_t[header.numIndices]();
-
-	// Read in vertices first, then indices
-	ReadFile(file, vertices, vertexBufferSize, &bytesRead, NULL);
-	ReadFile(file, indices, indexBufferSize, &bytesRead, NULL);
-
-	// Create GPU-side buffers
-	Util::VertexBufferCreationData data = {vertices, indices, m_numVertices, m_numIndices, m_vertexSize};
-
-	Util::CreateVertexIndexBuffer(device, data, &m_vertexBuffer, &m_indexBuffer, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
-
-	// Clean up
-	delete[] vertices;
-	delete[] indices;
-
-	CloseHandle(file);
-}
-
-MeshEntity::MeshEntity(ID3D11Device *device, void *vertices, uint32_t *indices, int32_t numVertices, int32_t numIndices, int32_t vertexSize){
-	m_vertexSize	= vertexSize;
-	m_world			= DirectX::XMMatrixIdentity();
-
-	// Fill in some data
-	m_numVertices				= numVertices;
-	m_numIndices				= numIndices;
-	
-	// Create GPU-side buffers
-	Util::VertexBufferCreationData data = {vertices, indices, m_numVertices, m_numIndices, m_vertexSize};
-
-	Util::CreateVertexIndexBuffer(device, data, &m_vertexBuffer, &m_indexBuffer, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
-}
-
 MeshEntity::MeshEntity(){
 	m_vertexBuffer	= nullptr;
 	m_indexBuffer	= nullptr;
@@ -147,4 +89,65 @@ MeshEntity &MeshEntity::operator=(MeshEntity &entity){
 	entity.m_indexBuffer	= nullptr;
 
 	return *this;
+}
+
+bool LoadMeshFromFile(ID3D11Device *device, const std::wstring &path, MeshEntity &entity){
+	entity.m_vertexSize	= sizeof(BoxVertex);
+
+	// Open up the model
+	HANDLE file = CreateFile(path.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+
+	if(file == INVALID_HANDLE_VALUE) return false;
+
+	// Read in header
+	DWORD bytesRead;
+	BoxHeader header;
+	uint32_t vertexBufferSize, indexBufferSize;
+
+	ReadFile(file, &header, sizeof(BoxHeader), &bytesRead, NULL);
+
+	// Fill in some data
+	entity.m_numVertices	= header.numVertices;
+	entity.m_numIndices		= header.numIndices;
+	vertexBufferSize		= entity.m_numVertices * entity.m_vertexSize;
+	indexBufferSize			= header.numIndices * sizeof(uint32_t);
+
+	// Allocate buffers
+	void *vertices		= new uint8_t[vertexBufferSize]();
+	uint32_t *indices	= new uint32_t[header.numIndices]();
+
+	// Read in vertices first, then indices
+	ReadFile(file, vertices, vertexBufferSize, &bytesRead, NULL);
+	ReadFile(file, indices, indexBufferSize, &bytesRead, NULL);
+
+	// Create GPU-side buffers
+	bool ret = true;
+	Util::VertexBufferCreationData data = {vertices, indices, entity.m_numVertices, entity.m_numIndices, entity.m_vertexSize};
+
+	if(FAILED(Util::CreateVertexIndexBuffer(device, data, &entity.m_vertexBuffer, &entity.m_indexBuffer, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE))){
+		ret = false;
+	}
+
+	// Clean up
+	delete[] vertices;
+	delete[] indices;
+
+	CloseHandle(file);
+	
+	return ret;
+}
+
+bool LoadMeshFromFile(ID3D11Device *device, void *vertices, uint32_t *indices, int32_t numVertices, int32_t numIndices,
+	int32_t vertexSize, MeshEntity &entity){
+
+	entity.m_vertexSize	= vertexSize;
+
+	// Fill in some data
+	entity.m_numVertices	= numVertices;
+	entity.m_numIndices		= numIndices;
+
+	// Create GPU-side buffers
+	Util::VertexBufferCreationData data = {vertices, indices, entity.m_numVertices, entity.m_numIndices, entity.m_vertexSize};
+
+	return Util::CreateVertexIndexBuffer(device, data, &entity.m_vertexBuffer, &entity.m_indexBuffer, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 }

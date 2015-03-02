@@ -5,6 +5,7 @@
 -Skymap
 -Parallex Occlusion mapping
 -decals
+-HDR (See below)
 -Animation
 -Light culling/defered shading/forward+ shading
 -Local reflections via probes/GI

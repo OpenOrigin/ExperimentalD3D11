@@ -19,8 +19,6 @@ private:
 	DirectX::XMMATRIX m_world;
 
 public:
-	MeshEntity(ID3D11Device *device, const std::wstring &path);
-	MeshEntity(ID3D11Device *device, void *vertices, uint32_t *indices, int32_t numVertices, int32_t numIndices, int32_t vertexSize);
 	MeshEntity();
 	~MeshEntity();
 
@@ -44,4 +42,12 @@ public:
 	DirectX::XMMATRIX getWorldMatrix() const;
 
 	MeshEntity & operator=(MeshEntity &entity);
+
+	friend bool LoadMeshFromFile(ID3D11Device *device, const std::wstring &path, MeshEntity &entity);
+	friend bool LoadMeshFromFile(ID3D11Device *device, void *vertices, uint32_t *indices, int32_t numVertices, int32_t numIndices,
+		int32_t vertexSize, MeshEntity &entity);
 };
+
+bool LoadMeshFromFile(ID3D11Device *device, const std::wstring &path, MeshEntity &entity);
+bool LoadMeshFromFile(ID3D11Device *device, void *vertices, uint32_t *indices, int32_t numVertices, int32_t numIndices, 
+	int32_t vertexSize, MeshEntity &entity);

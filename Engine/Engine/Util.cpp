@@ -224,7 +224,7 @@ bool InitalizeD3D(HWND wndHandle, uint32_t width, uint32_t height, uint32_t leve
 	(*device)->CreateTexture2D(&depthStencilDesc, NULL, &depthTexture);
 	(*device)->CreateDepthStencilView(depthTexture, NULL, depthView);
 
-	// Use the back buffer address to create the render target along with our depth buffer
+	// Use the back buffer address as the render target along with our depth buffer
 	(*deviceContext)->OMSetRenderTargets(1, backBufferView, *depthView);
 
 	backBuffer->Release();
