@@ -13,6 +13,7 @@ struct InputVertex{
 
 struct OutputVertex{
 	float4 pos : SV_POSITION;
+	float4 depthPosition : TEXTURE0;
 };
 
 OutputVertex V_Shader(InputVertex input){
@@ -21,6 +22,8 @@ OutputVertex V_Shader(InputVertex input){
 	output.pos = mul(input.pos, World);
 	output.pos = mul(output.pos, View);
 	output.pos = mul(output.pos, Projection);
+
+	output.pos.z /= output.pos.w;
 
 	return output;
 }

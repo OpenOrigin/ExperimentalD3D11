@@ -223,10 +223,10 @@ void GenerateShadowMap(){
 	// Send only position (float4), adjust offset to make up for difference
 	//UINT stride = sizeof(float) * 4, offset = sizeof(float) * 8;
 	UINT stride = g_masterChief.getVertexSize(), offset = 0;
-
+	
 	g_shadowMapper->startShadowRender(Global::DeviceContext, g_lightCamera);
 
-	// Render shadow caster
+	// Prepare shadow caster
 	ID3D11Buffer *vertexBuffer = g_masterChief.getVertexBuffer();
 	ID3D11Buffer *indexBuffer = g_masterChief.getIndexBuffer();
 

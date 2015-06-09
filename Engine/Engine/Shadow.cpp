@@ -91,6 +91,8 @@ void ShadowMapper::setWorldMatrix(ID3D11DeviceContext *context, const DirectX::X
 
 	m_cbData->world = world;
 	memcpy(mappedSubRsrc.pData, m_cbData, sizeof(ShadowMapConstantBufferData));
+
+	context->Unmap(m_constantBuffer, NULL);
 }
 
 ID3D11ShaderResourceView * ShadowMapper::getShadowTextureView() const{
