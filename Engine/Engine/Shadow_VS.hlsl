@@ -23,7 +23,7 @@ OutputVertex V_Shader(InputVertex input){
 	output.pos = mul(output.pos, View);
 	output.pos = mul(output.pos, Projection);
 
-	output.pos.z /= output.pos.w;
+	//output.pos.z /= output.pos.w;
 
 	return output;
 }

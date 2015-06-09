@@ -277,7 +277,7 @@ void RenderScene(){
 
 	// Fill constant buffer
 	g_materialCbData.viewProj = Global::UserCamera.getProjMatrix() * Global::UserCamera.getViewMatrix();
-	g_materialCbData.lightView = g_lightCamera.getViewMatrix() * Global::UserCamera.getProjMatrix();
+	g_materialCbData.lightView = g_lightCamera.getProjMatrix() * g_lightCamera.getViewMatrix();
 	g_materialCbData.cameraDir = DirectX::XMVectorNegate(Global::UserCamera.getTarget());
 	g_materialCbData.lightDir = g_lightCamera.getPos();
 
@@ -342,7 +342,7 @@ void RenderFromTexture(){
 
 void Render(){
 	const float LightSpeed = .75f;
-	DirectX::XMFLOAT3 lightOrigin(0, 30, -15), lightProtrusion(40, 0, 40);
+	DirectX::XMFLOAT3 lightOrigin(0, 60, -15), lightProtrusion(70, 0, 70);
 	float time = (float)Global::GameTimer.getDeltaTime(g_timeStart, g_timeCurrent);
 	
 	// Update light(s)
@@ -364,7 +364,7 @@ void Render(){
 
 	GenerateShadowMap();
 	RenderScene();
-	RenderFromTexture();
+	//RenderFromTexture();
 }
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdLine, int numCmdShow){
