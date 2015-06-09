@@ -1,28 +1,29 @@
 cbuffer ConstantBuffer : register (b0){
 	matrix World;
-	matrix View;
-	matrix Projection;
+	matrix ViewProj;
+	matrix LightView;
 	float3 LightDir;
 	float3 CameraDir;
 	float3 Mode;
 }
 
-// Samplers
 SamplerState TextureSampler{
-	Filter = MIN_MAG_MIP_LINEAR;
-	AddressU = Wrap;
-	AddressV = Wrap;
+	Filter		= MIN_MAG_MIP_LINEAR;
+	AddressU	= Wrap;
+	AddressV	= Wrap;
 };
 
-Texture2D DiffuseTexture : register(t0);
-Texture2D NormalTexture : register(t1);
+Texture2D DiffuseTexture	: register(t0);
+Texture2D NormalTexture		: register(t1);
+Texture2D ShadowMap			: register(t2);
 
-struct VS_Out{
+struct InputPixel{
 	float4 position : SV_POSITION;
-	float3 normal : NORMAL;
-	float2 texUV  : TEXCOORD0;
-	float3 tangent : TANGENT0;
+	float3 normal	: NORMAL;
+	float2 texUV	: TEXCOORD0;
+	float3 tangent	: TANGENT0;
 	float3 lightDir : TEXCOORD1;
+	float4 lpos		: TEXCOORD2;
 };
 
 float3 SampleNormalMap(float3 N, float3 T, float2 uv){
@@ -50,7 +51,8 @@ float4 BlinnPhong(float3 N, float4 diffuse, float3 lightColor, float3 lightDirec
 	float3 intensity		= pow(saturate(NdotH), 20);
 	float3 specularColor	= intensity * lightColor;
 
-	float3 finalColor		= saturate(dot(L, N) * diffuse) +specularColor;
+	float3 finalColor		= saturate(dot(L, N))  * diffuse * 2;// + specularColor;
+	if(saturate(dot(L, N)) > 0.025) finalColor = float3(1,1,1);
 	
 	return float4(finalColor, 1.0f);
 }
@@ -243,21 +245,34 @@ float4 CookTorrance4(float3 normal, float3 light, float4 diffuse, float3 lightCo
     return float4( final, 1.0f );
 }
 
-float4 P_Shader(VS_Out input) : SV_TARGET
+float4 P_Shader(InputPixel input) : SV_TARGET
 {
 	float4 diffuse = DiffuseTexture.Sample(TextureSampler, input.texUV);
 	float3 normal = SampleNormalMap(input.normal, input.tangent, input.texUV);
 	//float4 diffuse = float4(0.831, 0.6862, 0.21568, 1);
 	//float3 normal = normalize(input.normal);
 
+	//input.lpos.xyz /= input.lpos.w;
+
+	/*if(input.lpos.x < -1.0f || input.lpos.x > 1.0f ||
+		input.lpos.y < -1.0f || input.lpos.y > 1.0f ||
+		input.lpos.z < 0.0f || input.lpos.z > 1.0f) return float4(1,0,0,1);*/
+
+	//input.lpos.x = input.lpos.x / 2 + 0.5;
+	//input.lpos.y = input.lpos.y / -2 + 0.5;
+
+	////sample shadow map - point sampler
+	//float shadowMapDepth = ShadowMap.Sample(TextureSampler, input.lpos.xy).r;
+
+	////if clip space z value greater than shadow map value then pixel is in shadow
+	//if(shadowMapDepth < input.lpos.z) return float4(0, 0, 0, 1);
 
 	//return SolidColor(float3(1, 0, 1));
 	if (Mode.x == 0.0f) return CookTorrance(normal, input.lightDir, diffuse, float3(1, 1, 1), .13, .6);
 	if (Mode.x == 1.0f) return CookTorrance2(normal, input.lightDir, diffuse, float3(1, 1, 1), 0.23, .1);
 	if (Mode.x == 2.0f) return CookTorrance3(normal, input.lightDir, diffuse, float3(1, 1, 1), 0.23, .1);
 	if (Mode.x == 3.0f) return CookTorrance4(normal, input.lightDir, diffuse, float3(1, 1, 1), 0.3, 1);
-	//return CookTorrance4(normal, input.lightDir, diffuse, float3(1, 1, 1), 0.23, 0.1);
 	//return diffuse;
 
-	return BlinnPhong(normal, diffuse, float3(1, 1, 1), input.lightDir);
+	return BlinnPhong(normalize(input.normal), diffuse, float3(1, 1, 1), input.lightDir);
 }

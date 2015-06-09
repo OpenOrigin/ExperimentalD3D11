@@ -24,6 +24,7 @@
 #include "DDSTextureLoader.h"
 #include "Timer.h"
 #include "MeshEntity.h"
+#include "Shadow.h"
 
 // Classes
 class Camera;
