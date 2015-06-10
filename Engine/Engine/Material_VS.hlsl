@@ -40,7 +40,9 @@ OutputVertex V_Shader(InputVertex input){
 	output.lightDir = LightDir.xyz - worldPos.xyz;
 	output.lightDir = normalize(output.lightDir);
 
-	output.lpos = mul(input.pos, mul(World, LightView));
+	//output.lpos = mul(input.pos, mul(World, LightView));
+	output.lpos = mul(input.pos, World);
+	output.lpos = mul(output.lpos, LightView);
 	//output.lpos = mul(output.lpos, Projection);
 
 	return output;

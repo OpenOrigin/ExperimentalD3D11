@@ -251,21 +251,26 @@ float4 P_Shader(InputPixel input) : SV_TARGET
 	float3 normal = SampleNormalMap(input.normal, input.tangent, input.texUV);
 	//float4 diffuse = float4(0.831, 0.6862, 0.21568, 1);
 	//float3 normal = normalize(input.normal);
+	float2 projectTexCoord;
+	projectTexCoord.x = 0.5f + (input.lpos.x / input.lpos.w * 0.5f);
+	projectTexCoord.y = 0.5f - (input.lpos.y / input.lpos.w * 0.5f);
+	float pixelDepth = input.lpos.z / input.lpos.w;
+	if((saturate(projectTexCoord.x) == projectTexCoord.x) && (saturate(projectTexCoord.y) == projectTexCoord.y) &&
+		(pixelDepth > 0)){
 
-	//input.lpos.xyz /= input.lpos.w;
+	// Sample the shadow map depth value from the depth texture using the sampler at the projected texture coordinate location.
+	float depthValue = ShadowMap.Sample(TextureSampler, projectTexCoord).r;
 
-	/*if(input.lpos.x < -1.0f || input.lpos.x > 1.0f ||
-		input.lpos.y < -1.0f || input.lpos.y > 1.0f ||
-		input.lpos.z < 0.0f || input.lpos.z > 1.0f) return float4(1,0,0,1);*/
+	// Calculate the depth of the light.
+	float lightDepthValue = input.lpos.z / input.lpos.w;
 
-	//input.lpos.x = input.lpos.x / 2 + 0.5;
-	//input.lpos.y = input.lpos.y / -2 + 0.5;
+	// Subtract the bias from the lightDepthValue
+	float bias = 0.0001f;
+	lightDepthValue = lightDepthValue - bias;
 
-	////sample shadow map - point sampler
-	//float shadowMapDepth = ShadowMap.Sample(TextureSampler, input.lpos.xy).r;
-
-	////if clip space z value greater than shadow map value then pixel is in shadow
-	//if(shadowMapDepth < input.lpos.z) return float4(0, 0, 0, 1);
+	// Compare the depth of the shadow map value and the depth of the light to determine whether to shadow or to light this pixel.
+	// If the light is in front of the object then light the pixel, if not then shadow this pixel since an object (occluder) is casting a shadow on it.
+	if(lightDepthValue >= depthValue) return float4(0, 0, 0, 1);
 
 	//return SolidColor(float3(1, 0, 1));
 	if (Mode.x == 0.0f) return CookTorrance(normal, input.lightDir, diffuse, float3(1, 1, 1), .13, .6);
@@ -274,5 +279,7 @@ float4 P_Shader(InputPixel input) : SV_TARGET
 	if (Mode.x == 3.0f) return CookTorrance4(normal, input.lightDir, diffuse, float3(1, 1, 1), 0.3, 1);
 	//return diffuse;
 
-	return BlinnPhong(normalize(input.normal), diffuse, float3(1, 1, 1), input.lightDir);
+	//return BlinnPhong(normalize(input.normal), diffuse, float3(1, 1, 1), input.lightDir);
+	}
+	return float4(0, 0, 0, 1);
 }
